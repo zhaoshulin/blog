@@ -226,10 +226,10 @@ subst是一个函数，$@ 表示多个目标的集合，类似数组，遍历该
 定义cmd_bag:
 
 	define cmd_bag
-	cmd1
-	cmd2
-	...
-	cmdn
+		cmd1
+		cmd2
+		...
+		cmdn
 	endef
 
 使用cmd_bag:
