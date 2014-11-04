@@ -236,6 +236,106 @@ subst是一个函数，$@ 表示多个目标的集合，类似数组，遍历该
 
 	$(cmd_bag)
 
+##使用变量
+
+- 使用 ":=" 的方式给变量赋值的好处：只能使用前面已定义好的变量，不会造成死循环调用
+- 系统变量“MAKELEVEL”的作用：记录当前make的调用层数
+- “#”注释符可用于表示变量定义的终止：
+
+		定义Empty变量
+		nullstring :=
+	
+		使用#来表示变量定义的终止	
+		space := $(nullstring)#  
+
+		dir := /foo/bar# 这个#非常重要啦！不会出现粗心的空格
+
+- “？=”操作符的作用：如果变量FOO之前没有被定义过，就定义它为bar；否则什么也不干（人家有男友了，你就别动人家了，道德点）
+
+		FOO ?= bar
+
+- $(var:a=b) 作用是把变量var中所有以“a”结尾的“a”替换为“b”：
+
+		foo := a.o b.o c.o
+		bar := $(foo:.o=.c)
+		等价于：
+		foo := a.o b.o c.o
+		bar := a.c b.c c.c
+		等价于：
+		foo := a.o b.o c.o
+		bar := $(foo:%.o=%.c)
+
+- 变量命名的组合：
+
+		first_second = Hello
+		a = first
+		b = second
+		all = $($a_$b)
+
+		所以 $(all) 是 "Hello"
+
+- "+=" 可以追加变量值：
+
+		objects = src1.c src2.c
+		objects += src3.c 
+
+		现在 $(objects) 是 src1.c src2.c src3.c
+
+- 定义在文件中的变量，如果要向下层Makefile传递，需要使用export关键字
+- 为某个目标单独设置自己的局部变量：
+
+		prog : CFLAGS = -g
+		prog : prog.o foo.o bar.o
+		$(CC) $(CFLAGS) prog.o foo.o bar.o
+
+		prog.o : prog.c
+		$(CC) $(CFLAGS) prog.c
+
+		foo.o : foo.c
+		$(CC) $(CFLAGS) foo.c
+		
+		bar.o : bar.c
+		$(CC) $(CFLAGS) bar.c
+
+		在这个例子中，不管全局的$(CFLAGS)是什么，在prog目标（以及其所引发的所有规则：prog.o foo.o bar.o）中，
+		$(CFLAGS)都是 "-g"
+
+- override针对：
+	- 系统环境传入的变量
+	- make命令行指定的变量
+
+##使用条件判断
+
+6个关键字：
+
+1. ifeq
+2. ifneq
+3. ifdef
+4. ifndef
+5. else
+6. endif
+
+举例如下：
+
+	libs_for_gcc = -lgcc
+	normal_libs =
+
+	ifeq ($(CC), gcc)
+		libs = $(libs_for_gcc)
+	else
+		libs = $(normal_libs)
+	endif
+
+	foo : $(objects)
+	$(CC) -o foo $(objects) $(libs)
+
+
+
+
+
+
+
+
 
 
 	
