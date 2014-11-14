@@ -329,22 +329,174 @@ subst是一个函数，$@ 表示多个目标的集合，类似数组，遍历该
 	foo : $(objects)
 	$(CC) -o foo $(objects) $(libs)
 
+##使用函数
 
+- 使用方法：
 
+		$(subst a,b,c) 相当于c语言中的 subst(a, b, c)
 
-
-
-
-
-
-
+- 字符串处理函数：
 	
+		$(subst <from>,<to>,<text>) 字符串替换
+		$(patsubst <pattern>,<replacement>,<text>) 模式字符串替换
+		$(strip <string>) 去掉开头和结尾的空格
+		$(findstring <find>,<in>) 在字符串<in>中查找<find>字符
+		$(filter <pattern...>,<text>) 从<text>中过滤出（保留）满足<pattern...>的单词
+		$(filter-out <pattern...>,<text>) 从<text>中反过滤出（去掉）满足<pattern...>的单词
+		$(sort <list>) 升序排序<list>中的单词
+		$(word <n>,<text>) 从<text>中取出第<n>个单词
+		$(wordlist <s>,<e>,<text>) 从<text>中取出从第<s>个到第<e>个单词组合
+		$(words <text>) 统计<text>中的单词个数
+		$(firstword <text>) 取<text>的首个单词
+		
+- 字符串处理函数典型例子分析：
+
+		VPATH = src:../headers
+		override CFLAGS += $(patsubst %, -I%, $(subst :, ,$(VPATH)))
+
+		1，$(subst :, ,$(VPATH)))的结果是：(把，变成空格)
+			src ../headers
+		2，$(patsubst %, -I%, src ../headers)的结果是：
+			-Isrc -I../headers
+
+- 文件名操作函数:
+
+		$(dir <names...>) 从文件名序列<names...>中取出目录部分
+		$(notdir <names...>) 从文件名序列<names...>中取出非目录部分
+		$(suffix <names...>) 取后缀，比如 .c .h .o
+		$(basename <names...>) 取前缀
+		$(addsuffix <suffix>,<names...>) 加后缀
+		$(addprefix <prefix>,<names...>) 加前缀
+		$(join <list1>,<list2>) 链接，举例：
+			$(join aaa bbb, 111 222 333) => "aaa111 bbb222 333"
+		$(foreach <var>,<list>,<text>) 循环体，举例：
+			names := a b c d
+			files := $(foreach n, $(names), $(n).o)
+				=>
+			a.o b.o c.o d.o
+		$(if <condition>, <then-part>)
+		$(if <condition>, <then-part>, <else-part>)
+		$(call <expression>,<parm1>,<parm2>,<parm3>...) 函数调用
+		$(origin <variable>) 变量来源：
+			undefined default environment file command_line override automatic
+		
+- shell函数
+		
+		$(shell <cmd>)	
 	
+- 控制make的函数
 
+		$(error <text>) 调用error，打印错误信息<text>
+		$(warning <text>) 调用warning，打印警告信息<text>
 
+##make 的运行
 
+- make的退出码：
+	- 0：成功执行
+	2. 1：出现错误
+	3. 2：使用了make的"-q"选项，有些目标不需要更新
 
+- 指定make
+	- 默认下的顺序：
+		1. GNUmakefile
+		2. makefile
+		3. Makefile
+	- "-f": 人为指定一个自定义的文件名字（比如：my_Makefile.mk）
 
+		 	make -f my_Makefile.mk 
 
+- 指定目标
+	- MAKECMDGOALS：存放着你所指定的目标，是一个list
+	- 举例1：
 
+				sources = foo.c bar.c
+				ifneq($(MAKECMDGOALS), clean)
+					include $(sources:.c=.d)
+				endif
 
+	- 结果：
+		- 只要我们输入的命令不是 "make clean"，那么Makefile会自动包含 "foo.d" 和 "bar.d" 这两个Makefile
+
+	- 举例2：
+
+				.PHONY: all
+				all: prog1 prog2 prog3 prog4
+
+	- 结果：
+		- 这个Makefile需要编译四个程序：prog1 prog2 prog3 prog4
+		- 可以使用 "make all" 来编译所有的目标
+		- 可以使用 "make prog2" 来单独编译目标 "prog2"
+
+	- GNU官方Makefile中的目标：
+		1. “all”：编译所有的目标
+		2. “clean”：删除所有被make创建的文件
+		3. “install”：安装已经编译好的程序
+		4. “print”：列出改变过的源文件
+		5. “tar”：把源程序打包备份（.tar）
+		6. “dist”：把源程序打包备份（.gz）
+		7. “TAGS”：更新所有目标，以备重编译
+		8. “clean”和“test”：测试Makefile的流程
+
+- make的参数
+
+		-b：忽略兼容性
+		-m：忽略兼容性
+		-B：重编译所有目标
+		-C <dir>：指定Makefile所在的目录
+		-d：输出所有的调试信息
+		-e：用环境变量的变量值覆盖掉Makefile中的变量值
+		-f=<file>：指定需要执行的Makefile
+		-h：help
+		-i：忽略所有错误
+		-I <dir>：包含进一个搜索目标
+		-j 4:4线程工作
+		-k：出错也不停止运行（如果一个目标失败了，那么依赖这个目标的相关目标就不会被执行了）
+		-n：只按顺序输出命令序列，并不执行
+		-q：检查目标是否需要更新
+		-r：禁用隐含规则
+		-R：禁用变量隐含规则
+		-s：不输出命令的输出
+		-S：取消 "-k" 的作用
+		-t：touch某个目标，使之时间戳变为最新
+		-v：版本
+
+##隐含规则
+
+- 编译c程序的隐含规则
+	
+		<xyz>.o ---> <xyz>.c #.o的依赖 自动推导出 .c
+		$(CC) -c $(CPPFLAGS) $(CFLAGS)
+
+- 编译c++程序的隐含规则
+
+		<xyz>.o ---> <xyz>.cc
+		$(CXX) -c $(CPPFLAGS) $(CFLAGS)
+
+- 汇编的隐含规则
+
+		1. <xyz>.o ---> <xyz>.s
+			$(AS) $(ASFLAGS)
+
+		2. <xyz>.s ---> <xyz>.S
+			$(AS) $(ASFLAGS)	
+
+- 链接 .o 文件的隐含规则（ld命令：链接）
+
+		<xyz> ---> <xyz>.o
+		$(CC) $(LDFLAGS) <xyz>.o $(LOADLIBS) $(LDLIBS)
+
+- 一个目标只能出现一次：防止无限递归
+
+##自动化变量
+
+1. $@：目标
+2. $%：库文件 (.a .lib) 中的目标
+
+		举例：
+			foo.a (bar.o)
+			$% 是 bar.o
+
+3. $^：依赖（all）
+4. $?：依赖（newer than 目标）
+5. $<：第一个依赖（类似于c++中的迭代器）
+6. $+：依赖（all，并且不去除重复的）
