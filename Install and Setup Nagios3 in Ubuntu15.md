@@ -42,6 +42,7 @@ To be clear:
 		define service{
 			host_name my_host
 			service_description xxxDetails
+			check_command check_xxx
 			use generic-service
 			notification_interval 0
 		}
