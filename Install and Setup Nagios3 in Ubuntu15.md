@@ -23,7 +23,7 @@ To be clear:
 
 
 ## Add a new-host
-- `father: $ sudo cp /etc/nagios3/conf/localhost_nagios2.cfg /etc/nagios3/conf/my_host.cfg`
+- `father: $ sudo cp /etc/nagios3/conf.d/localhost_nagios2.cfg /etc/nagios3/conf.d/my_host.cfg`
 - `father: $ vim /etc/nagios3/conf/my_host.cfg`
 	- rewrite: from `hostname localhost` to `hostname my_host`
 - `son: $ sudo /etc/init.d/nagios-nrpe-server restart`
