@@ -20,6 +20,8 @@ To be clear:
 - on `father`:
 	- `$ sudo /etc/init.d/nagios3 start`
 	- open dashboard-link to observe: `http://localhost/nagios3/`
+		- User-name: `nagiosadmin`
+		- Password: whatever you setup when installing nagios, for example, `nagios`
 
 
 ## Add a new-host
