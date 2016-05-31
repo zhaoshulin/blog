@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#tmpfile=/home/nagios/nagios-lenovo-switch/tmp/check_lenovo_switch_memory.txt
+#touch $tmpfile
+
+# Lenovo-Switch's IP address:
+ipaddress=10.240.253.174
+
+# MIB for Memory Statistics Group:
+total=totalMemoryStats
+free=memoryFreeStats
+shared=memorySharedStats
+buffer=memoryBufferStats
+swapTotal=swapTotalStats
+swapFree=swapFreeStats
+highTotal=highTotalStats
+highFree=highFreeStats
+
+# Define warn and crit:
+warn=2000
+crit=1000
+
+# get memory-infor:
+total_value=` snmpwalk -v 2c -c public ${ipaddress} ${total} | awk {'print $4'} `
+total_MB=`echo "scale=0; $total_value"/1024/1024|bc`
+
+free_value=` snmpwalk -v 2c -c public $ipaddress $free | awk {'print $4'} `
+free_MB=`echo "scale=0; $free_value"/1024/1024|bc`
+
+shared_value=` snmpwalk -v 2c -c public $ipaddress $shared | awk {'print $4'} `
+shared_MB=`echo "scale=0; $shared_value"/1024/1024|bc`
+
+
+# output and return:
+if [ $free_MB -lt $crit ]; then
+   echo "CRITICAL - ${total_MB} MB in total,  MB in free."
+   EXIT=2
+elif [ $free_MB -lt $warn ]; then
+   echo "WARNING - $total_MB MB in total, $free_MB MB in free."
+   EXIT=1
+elif [ $free_MB -ge 2000 ]; then
+   echo "OK - $total_MB MB in total, $free_MB MB in free."
+   EXIT=0
+else
+   echo "UNKNOWN - Something is wrong!"
+   EXIT=3
+fi
+
+exit $EXIT
+
