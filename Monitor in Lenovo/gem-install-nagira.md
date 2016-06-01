@@ -12,6 +12,8 @@
 - `gem sources -r https://rubygems.org/`
 - `gem sources -a http://rubygems.org/`
 - `gem install nagira`
+- `gem install pry`
+- `nagira-setup config:all`
 - after installed, reset sources:
 	- `gem sources -r http://rubygems.org/`
 	- `gem sources -a https://rubygems.org/`
