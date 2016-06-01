@@ -8,7 +8,7 @@
 	- `gem install nagira` 
 
 ## OK, you should follow those steps:
-- `sudo apt-get install ruby ruby-dev libmysqlclient-dev`
+- `sudo apt-get install ruby ruby-dev libmysqlclient-dev rake`
 - `gem sources -r https://rubygems.org/`
 - `gem sources -a http://rubygems.org/`
 - `gem install nagira`
